@@ -3,15 +3,16 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Data (too large for git)
+# Data (AAPM challenge data — not redistributable)
 data/*.npy
 
-# Model checkpoints (too large for git)
-checkpoints/*.pt
+# Training resume checkpoints (never commit)
+checkpoints/*_training.pt
 
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # IDE
 .vscode/
@@ -19,7 +20,24 @@ Thumbs.db
 
 # Office / PowerPoint temp files
 ~$*
+~WRL*.tmp
+
+# Equation rendering build artifacts
+paper/_eq_images/
 
 # Logs
 nohup.out
 *.log
+
+# Archives (old experiment backups)
+**/archive_*/
+
+# Internal documents (not for public release)
+docs/JOURNAL_PLAN.md
+docs/NOTES.md
+new_paper/CHANGES_FROM_PREVIOUS_VERSION.md
+new_paper/README.md
+new_paper/*.docx
+old_paper/
+presentation/
+Q&A/

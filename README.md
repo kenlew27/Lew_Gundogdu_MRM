@@ -1,103 +1,163 @@
-# PIA-IVIM: Physics-Informed AI for Intravoxel Incoherent Motion MRI
+# PIA-IVIM: Physics-Informed Deep Learning for Breast IVIM Parameter Estimation
 
-Two-stage deep learning pipeline for quantitative IVIM parameter estimation from diffusion-weighted breast MRI, benchmarked against non-linear least squares (NLLS) fitting.
+Two-stage physics-informed deep learning pipeline for noise-robust intravoxel incoherent motion (IVIM) parameter estimation in breast diffusion-weighted MRI.
 
-Based on the AAPM IVIM Challenge using VICTRE digital breast phantoms.
+> **Paper:** *Physics-informed deep learning for noise-robust IVIM parameter estimation in breast DW-MRI: A two-stage pipeline with self-supervised autoencoders and spatial U-Net refinement*
+>
+> Ken Lew, Batuhan Gundogdu
+
+Evaluated on 200 held-out test cases (801–1000) from the [AAPM 2024 IVIM-dMRI Grand Challenge](https://www.aapm.org/GrandChallenge/IVIM-dMRI/) VICTRE digital breast phantom dataset.
+
+## Results
+
+| Method | Composite rRMSE (SNR 20) | Composite rRMSE (SNR 10) | GPU Latency |
+|--------|--------------------------|--------------------------|-------------|
+| NLLS (baseline) | 17.31 | 22.96 | N/A (187.5 s CPU) |
+| IVIM-NET | 0.096 | 0.098 | 1.03 ms |
+| MLP-PIA | 0.089 | 0.090 | 4.28 ms |
+| CNN-PIA | 0.093 | 0.094 | 8.09 ms |
+| MLP-PIA + Refiner | 0.088 | 0.089 | 25.49 ms |
+| **CNN-PIA + Refiner** | **0.087** | **0.088** | 29.16 ms |
 
 ## Repository Structure
 
 ```
 ├── src/                     Source code
-│   ├── PIA.py               Self-supervised PIA model (Stage 1 MLP autoencoder)
-│   ├── model.py             Supervised PIAEncoder baseline (Model-1)
-│   ├── utils.py             Metrics (rRMSE), data loading, NLLS fitting, batch generation
-│   ├── NLLS_solution.py     NLLS baseline evaluation script
-│   └── method1.py           Supervised baseline training script
-│
-├── data/                    VICTRE phantom dataset (not tracked in git)
-│   └── XXXX_*.npy           Per-patient files (see Data Format below)
-│
-├── checkpoints/             Trained model weights (not tracked in git)
-│   ├── pia_baseline.pt      MLP-PIA (Stage 1)
-│   ├── pia_cnn_best.pt      CNN-PIA (Stage 1)
-│   ├── refiner_cnn_best.pt  CNN-PIA + U-Net Refiner (Stage 2)
-│   ├── refiner_cnn_e2e_best.pt   CNN-PIA + Refiner, end-to-end fine-tuned
-│   └── refiner_mlp_e2e_best.pt   MLP-PIA + Refiner, end-to-end fine-tuned
-│
-├── figures/                 Publication figures & scripts (Black & White)
-│   ├── benchmark_inference.py   Inference timing benchmark (CPU & GPU)
-│   ├── plot_noise_clean.py      rRMSE vs noise level line plots
-│   ├── plot_tables.py           Publication tables (inference time & rRMSE)
-│   ├── plot_paper_figures.py    Qualitative maps, ablation & input figures
-│   └── *.png / *.jpg            Generated figures and architecture diagrams
-│
-├── results/                 Evaluation data
-│   ├── noise_evaluation_results_e2e.json   rRMSE across 12 noise levels
-│   └── inference_timing.json               CPU/GPU timing measurements
-│
-└── paper/                   Manuscript & presentation source
-    ├── PIA_IVIM_1_Introduction.tex / .docx
-    ├── PIA_IVIM_2_Methodology.tex / .docx
-    └── PIA_IVIM_Presentation.pptx          13-slide PowerPoint presentation
+│   ├── PIA.py               Stage 1 autoencoders (MLP-PIA, CNN-PIA) + Stage 2 UNet Refiner
+│   ├── ivim_net.py           IVIM-NET baseline (Barbieri et al.)
+│   ├── utils.py              Data loading, rRMSE metrics, NLLS fitting, signal model
+│   ├── train_pia_mlp.py      Train MLP-PIA (Stage 1)
+│   ├── train_pia_cnn.py      Train CNN-PIA (Stage 1)
+│   ├── train_ivim_net.py     Train IVIM-NET baseline
+│   ├── train_refiner.py      Train UNet Refiner (Stage 2)
+│   ├── retrain_all.py        Master training orchestrator
+│   ├── evaluate_comprehensive.py   Full evaluation (12 noise levels, 200 test cases)
+│   ├── evaluate_nlls_subset.py     NLLS benchmark (30 cases, 4 noise levels)
+│   ├── plot_main_figures.py        Main paper figures
+│   └── plot_supplementary_figures.py  Supplementary figures
+├── checkpoints/             Trained model weights (included)
+├── results/                 Evaluation outputs (JSON)
+├── figures/                 Generated figures (PNG + PDF)
+├── data/                    VICTRE phantom data (NOT included — see below)
+├── docs/                    Additional documentation
+├── requirements.txt         Python dependencies
+└── LICENSE                  MIT License
 ```
 
-## Data Format
+## Setup
 
-Each patient case (400 cases, indexed 0001–0400) has 6 files in `data/`:
+### Prerequisites
 
-| File | Shape | Description |
-|------|-------|-------------|
-| `XXXX_IVIMParam.npy` | `200×200×3` | Ground truth parameters (f, Dt, D*) |
-| `XXXX_gtDWIs.npy` | `200×200×8` | Clean ground truth DWI signals |
-| `XXXX_NoisyDWIk.npy` | `200×200×8` | Complex k-space data with noise |
-| `XXXX_NoisyEstimate.npy` | `200×200×3` | MLP-PIA parameter estimates |
-| `XXXX_NoisyEstimateCNN.npy` | `200×200×3` | CNN-PIA parameter estimates |
-| `XXXX_TissueType.npy` | `200×200` | Tissue segmentation (1=air, 8=tumor) |
+- Python ≥ 3.10
+- NVIDIA GPU recommended (CUDA-compatible); CPU-only is supported but slower
 
-**b-values**: [0, 5, 50, 100, 200, 500, 800, 1000] s/mm²
-
-## IVIM Model
-
-The bi-exponential IVIM signal model:
-
-$$S(b) = (1-f) \cdot e^{-b \cdot D_t} + f \cdot e^{-b \cdot D^*}$$
-
-| Parameter | Symbol | Units | Typical Range |
-|-----------|--------|-------|---------------|
-| Perfusion fraction | f | — | 0.05–0.35 |
-| Tissue diffusivity | Dt | mm²/s | 0.0007–0.0015 |
-| Pseudo-diffusivity | D* | mm²/s | 0.005–0.06 |
-
-## Dependencies
-
-- Python 3.8+
-- PyTorch (with CUDA support for GPU inference)
-- NumPy
-- SciPy
-- matplotlib
-- python-pptx
-- tqdm
-
-## Usage
-
-All models and evaluations are run from their respective directories:
+### Installation
 
 ```bash
-# Run NLLS baseline
-cd src
-python NLLS_solution.py
-
-# Benchmark inference speeds (CPU & GPU)
-cd ../figures
-python benchmark_inference.py
-
-# Generate publication tables and figures
-python plot_tables.py
-python plot_noise_clean.py
-python plot_paper_figures.py
+git clone https://github.com/kenlew27/Lew_Gundogdu_MRM.git
+cd Lew_Gundogdu_MRM
+pip install -r requirements.txt
 ```
+
+### Data
+
+The VICTRE phantom dataset is provided by the AAPM 2024 IVIM-dMRI Grand Challenge and is **not redistributed** in this repository per the challenge data-use terms.
+
+1. Register at [https://www.aapm.org/GrandChallenge/IVIM-dMRI/](https://www.aapm.org/GrandChallenge/IVIM-dMRI/)
+2. Download the 1,000-case training dataset
+3. Place the `.npy` files in the `data/` directory:
+   - `XXXX_IVIMParam.npy` — Ground truth IVIM parameters (f, Dt, D*)
+   - `XXXX_NoisyDWIk.npy` — Noisy k-space DWI data
+   - `XXXX_TissueType.npy` — Tissue segmentation masks
+   - `XXXX_gtDWIs.npy` — Ground truth clean DWI signals
+
+### Data Split
+
+| Split | Cases | Purpose |
+|-------|-------|---------|
+| Training | 0001–0600 | Model training |
+| Validation | 0601–0800 | Checkpoint selection |
+| Test | 0801–1000 | Held-out evaluation (all reported metrics) |
+
+## Reproducing Results
+
+All commands should be run from the `src/` directory:
+
+```bash
+cd src
+```
+
+### 1. Training (optional — pretrained weights included in `checkpoints/`)
+
+```bash
+# Train all 5 models sequentially (IVIM-NET → MLP-PIA → CNN-PIA → Refiners)
+python retrain_all.py
+
+# Or train individual models:
+python train_ivim_net.py --epochs 200 --seed 42
+python train_pia_mlp.py --epochs 500 --seed 42
+python train_pia_cnn.py --epochs 500 --seed 42
+python train_refiner.py --stage1 mlp --epochs 200 --seed 42
+python train_refiner.py --stage1 cnn --epochs 200 --seed 42
+```
+
+### 2. Evaluation
+
+```bash
+# Full deep learning evaluation (200 test cases × 12 noise levels)
+python evaluate_comprehensive.py
+
+# NLLS benchmark (30 cases × 4 noise levels) — CPU-intensive
+python evaluate_nlls_subset.py
+```
+
+Results are saved to `results/evaluation_detailed.json` and `results/nlls_subset_results.json`.
+
+### 3. Figure Generation
+
+```bash
+python generate_all_figures.py
+```
+
+Generates all main and supplementary figures to `figures/` and `new_paper/figures/`.
+
+## Trained Checkpoints
+
+All weights are included in `checkpoints/`:
+
+| File | Model | Size |
+|------|-------|------|
+| `ivim_net_best.pt` | IVIM-NET (baseline) | 24 KB |
+| `pia_baseline.pt` | MLP-PIA (Stage 1) | 3.9 MB |
+| `pia_cnn_best.pt` | CNN-PIA (Stage 1) | 763 KB |
+| `refiner_mlp_e2e_best.pt` | MLP-PIA + UNet Refiner | 13.4 MB |
+| `refiner_cnn_e2e_best.pt` | CNN-PIA + UNet Refiner | 13.4 MB |
+
+All models were trained with random seed 42 (`torch.manual_seed(42)`, `numpy.random.seed(42)`, `torch.cuda.manual_seed_all(42)`).
+
+## Reproducibility
+
+- **Seeds**: All training scripts default to `--seed 42`
+- **Evaluation noise**: Deterministic per-case seeding (`seed = patient_idx × 10000 + noise_idx`)
+- **avg S₀**: Computed from training cases 1–600 only (0.266081) to avoid test-set leakage
 
 ## Citation
 
-Based on the PIA-IVIM framework by Batuhan Gundogdu, University of Chicago Radiology.
-Upstream: [batuhan-gundogdu/PIA_IVIM](https://github.com/batuhan-gundogdu/PIA_IVIM)
+```bibtex
+@article{lew2026pia_ivim,
+  title={Physics-informed deep learning for noise-robust {IVIM} parameter estimation in breast {DW-MRI}: A two-stage pipeline with self-supervised autoencoders and spatial {U-Net} refinement},
+  author={Lew, Ken and Gundogdu, Batuhan},
+  journal={Magnetic Resonance in Medicine},
+  year={2026}
+}
+```
+
+## License
+
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+
+## Acknowledgments
+
+- VICTRE digital breast phantom platform (U.S. FDA)
+- AAPM 2024 Quantitative IVIM-dMRI Reconstruction Grand Challenge
+- Original PIA framework: [batuhan-gundogdu/PIA_IVIM](https://github.com/batuhan-gundogdu/PIA_IVIM)
