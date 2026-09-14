@@ -20,7 +20,7 @@ This codebase implements a physics-informed deep learning framework for non-inva
    The dataset loading pipeline (`src/utils.py`, `data/`) processes 1000 synthetic patient cases ($200 \times 200$ resolution slices) generated via the FDA VICTRE platform, split into 600 training / 200 validation / 200 held-out test cases. Files include complex k-space noisy signals (`XXXX_NoisyDWIk.npy`), clean ground-truth signals (`XXXX_gtDWIs.npy`), ground-truth parameter maps (`XXXX_IVIMParam.npy`), and tissue segmentation masks (`XXXX_TissueType.npy`).
 
 6. **Automated CPU vs. GPU Speed Benchmarking**:
-   The benchmarking module (`figures/benchmark_inference.py`) evaluates execution time across CPU and GPU hardware, recording slice-level latency metrics in `results/inference_timing.json`. It demonstrates a 6,431× speedup (29 ms per slice on GPU vs. 187.3 seconds for CPU NLLS fitting).
+   The benchmarking module evaluates execution time across CPU and GPU hardware, recording slice-level latency metrics. The CNN-PIA + Refiner pipeline achieves a 31,888× speedup (5.88 ms per slice on GPU vs. 187.5 seconds for CPU NLLS fitting).
 
 7. **Multi-Noise Robustness & Metric Evaluation**:
    The evaluation workflow assesses parameter estimation accuracy across 12 noise standard deviation levels ($\sigma = 0.00$ to $0.25$, corresponding to SNR 4 to 100). Relative Root Mean Square Error ($\text{rRMSE}$) is computed separately across total tissue, tumor regions, and per-parameter ($f, D_t, D^*$), saving structured quantitative results to `results/noise_evaluation_results_e2e.json`.

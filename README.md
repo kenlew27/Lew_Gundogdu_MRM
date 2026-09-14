@@ -2,7 +2,7 @@
 
 Two-stage physics-informed deep learning pipeline for noise-robust intravoxel incoherent motion (IVIM) parameter estimation in breast diffusion-weighted MRI.
 
-> **Paper:** *Physics-informed deep learning for noise-robust IVIM parameter estimation in breast DW-MRI: A two-stage pipeline with self-supervised autoencoders and spatial U-Net refinement*
+> **Paper:** *Physics-informed deep learning for noise-robust intravoxel incoherent motion estimation in breast MRI*
 >
 > Ken Lew, Batuhan Gundogdu
 
@@ -10,14 +10,13 @@ Evaluated on 200 held-out test cases (801–1000) from the [AAPM 2024 IVIM-dMRI 
 
 ## Results
 
-| Method | Composite rRMSE (SNR 20) | Composite rRMSE (SNR 10) | GPU Latency |
-|--------|--------------------------|--------------------------|-------------|
-| NLLS (baseline) | 17.31 | 22.96 | N/A (187.5 s CPU) |
-| IVIM-NET | 0.096 | 0.098 | 1.03 ms |
-| MLP-PIA | 0.089 | 0.090 | 4.28 ms |
-| CNN-PIA | 0.093 | 0.094 | 8.09 ms |
-| MLP-PIA + Refiner | 0.088 | 0.089 | 25.49 ms |
-| **CNN-PIA + Refiner** | **0.087** | **0.088** | 29.16 ms |
+| Method | Composite Total rRMSE (SNR 20) | Composite Tumor rRMSE (SNR 20) | GPU Latency |
+|--------|-------------------------------|-------------------------------|-------------|
+| **CNN-PIA + Refiner** | **0.087 ± 0.039** | **0.052 ± 0.038** | **5.88 ms** |
+| MLP-PIA + Refiner | 0.095 ± 0.039 | 0.050 ± 0.037 | 18.36 ms |
+| CNN-PIA | 0.616 ± 0.051 | 0.386 ± 0.046 | 1.56 ms |
+| MLP-PIA | 0.624 ± 0.050 | 0.384 ± 0.047 | 16.58 ms |
+| NLLS (baseline) | 0.892 ± 0.091 | 0.529 ± 0.086 | N/A (187.5 s CPU) |
 
 ## Repository Structure
 
@@ -90,11 +89,10 @@ cd src
 ### 1. Training (optional — pretrained weights included in `checkpoints/`)
 
 ```bash
-# Train all 5 models sequentially (IVIM-NET → MLP-PIA → CNN-PIA → Refiners)
+# Train all models sequentially (MLP-PIA → CNN-PIA → Refiners)
 python retrain_all.py
 
 # Or train individual models:
-python train_ivim_net.py --epochs 200 --seed 42
 python train_pia_mlp.py --epochs 500 --seed 42
 python train_pia_cnn.py --epochs 500 --seed 42
 python train_refiner.py --stage1 mlp --epochs 200 --seed 42
@@ -107,7 +105,7 @@ python train_refiner.py --stage1 cnn --epochs 200 --seed 42
 # Full deep learning evaluation (200 test cases × 12 noise levels)
 python evaluate_comprehensive.py
 
-# NLLS benchmark (30 cases × 4 noise levels) — CPU-intensive
+# NLLS benchmark (200 test cases × 4 noise levels) — CPU-intensive
 python evaluate_nlls_subset.py
 ```
 
@@ -145,7 +143,7 @@ All models were trained with random seed 42 (`torch.manual_seed(42)`, `numpy.ran
 
 ```bibtex
 @article{lew2026pia_ivim,
-  title={Physics-informed deep learning for noise-robust {IVIM} parameter estimation in breast {DW-MRI}: A two-stage pipeline with self-supervised autoencoders and spatial {U-Net} refinement},
+  title={Physics-informed deep learning for noise-robust intravoxel incoherent motion estimation in breast {MRI}},
   author={Lew, Ken and Gundogdu, Batuhan},
   journal={Magnetic Resonance in Medicine},
   year={2026}
