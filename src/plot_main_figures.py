@@ -105,7 +105,6 @@ def generate_figure_2(dl_data, nlls_data):
         ('mlp_ref', 'MLP-PIA + Refiner', '-.v', '#444444', 1.8, 7, '#444444'),
         ('cnn', 'CNN-PIA', ':d', '#aaaaaa', 1.5, 7, 'white'),
         ('cnn_ref', 'CNN-PIA + Refiner', '-o', 'black', 2.5, 8, 'black'),
-        ('ivim_net', 'IVIM-NET', '--s', '#666666', 1.5, 6, 'white')
     ]
     
     noise_levels = dl_data['noise_levels']
@@ -164,7 +163,6 @@ def generate_figure_3(dl_data, nlls_data):
         ('mlp_ref', 'MLP-PIA + Refiner', '-.v', '#444444', 1.8, 7, '#444444'),
         ('cnn', 'CNN-PIA', ':d', '#aaaaaa', 1.5, 7, 'white'),
         ('cnn_ref', 'CNN-PIA + Refiner', '-o', 'black', 2.5, 8, 'black'),
-        ('ivim_net', 'IVIM-NET', '--s', '#666666', 1.5, 6, 'white')
     ]
     
     noise_levels = dl_data['noise_levels']

@@ -61,7 +61,6 @@ def generate_figure_s1(dl_data, nlls_data):
         ('mlp_ref', 'MLP-PIA + Ref', '-.v', '#444444', 1.6, 6, '#444444'),
         ('cnn', 'CNN-PIA', ':d', '#aaaaaa', 1.4, 6, 'white'),
         ('cnn_ref', 'CNN-PIA + Ref', '-o', 'black', 2.2, 7, 'black'),
-        ('ivim_net', 'IVIM-NET', '--s', '#666666', 1.4, 5, 'white')
     ]
     
     for metric, title, ax in params:
@@ -94,8 +93,8 @@ def generate_figure_s2(dl_data):
     bench_sigmas = [0.02, 0.05, 0.10, 0.20]
     snr_titles = ['SNR 50 ($\\sigma=0.02$)', 'SNR 20 ($\\sigma=0.05$)', 'SNR 10 ($\\sigma=0.10$)', 'SNR 5 ($\\sigma=0.20$)']
     
-    methods = ['ivim_net', 'mlp', 'cnn', 'mlp_ref', 'cnn_ref']
-    labels = ['IVIM-NET', 'MLP-PIA', 'CNN-PIA', 'MLP+Ref', 'CNN+Ref']
+    methods = ['mlp', 'cnn', 'mlp_ref', 'cnn_ref']
+    labels = ['MLP-PIA', 'CNN-PIA', 'MLP+Ref', 'CNN+Ref']
     colors = ['#cccccc', '#bbbbbb', '#aaaaaa', '#666666', '#222222']
     noise_levels = dl_data['noise_levels']
     
@@ -190,7 +189,6 @@ def generate_figure_s4(dl_data, nlls_data):
     
     methods_list = [
         ('NLLS', 'nlls'),
-        ('IVIM-NET', 'ivim_net'),
         ('MLP-PIA', 'mlp'),
         ('CNN-PIA', 'cnn'),
         ('MLP-PIA + Refiner', 'mlp_ref'),
@@ -219,8 +217,6 @@ def generate_figure_s4(dl_data, nlls_data):
                 
             is_best = False
             if m_key == 'mlp_ref' and met in ['f_tumor', 'composite_tumor']:
-                is_best = True
-            elif m_key == 'ivim_net' and met == 'Dt_tumor':
                 is_best = True
             elif m_key == 'cnn_ref' and met == 'Dstar_tumor':
                 is_best = True
