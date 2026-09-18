@@ -132,7 +132,9 @@ def generate_figure_s3():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.8))
     
     methods = ['NLLS\n(Voxel-wise)', 'MLP-PIA', 'CNN-PIA', 'MLP+Refiner', 'CNN+Refiner']
-    cpu_times = [187.511, 0.125, 0.013, 0.050, 0.050]
+    # CPU latency values from Table 2 of manuscript (seconds per 200x200 slice)
+    # MLP+Refiner = MLP-PIA (0.164) + Refiner (0.042) stage times
+    cpu_times = [187.511, 0.164, 0.015, 0.206, 0.075]
     
     y_pos = np.arange(len(methods))
     ax1.barh(y_pos, cpu_times, color=['#333333', '#888888', '#aaaaaa', '#666666', '#222222'], height=0.6, edgecolor='black')
@@ -148,9 +150,10 @@ def generate_figure_s3():
     for i, t in enumerate(cpu_times):
         ax1.text(t * 1.3, i, f"{t:.3f} s" if t < 1 else f"{t:.1f} s", va='center', fontsize=9.5, weight='bold')
         
-    speedups = [1.0, 187.511 / 0.125, 187.511 / 0.048, 187.511 / 0.420, 187.511 / 0.389]
+    # Speedups from Table 2: 187.511 / cpu_time for each DL method
     dl_methods = ['MLP-PIA', 'CNN-PIA', 'MLP+Refiner', 'CNN+Refiner']
-    dl_speedups = speedups[1:]
+    dl_cpu = [0.164, 0.015, 0.206, 0.075]
+    dl_speedups = [187.511 / t for t in dl_cpu]
     
     ax2.bar(np.arange(len(dl_methods)), dl_speedups, color=['#888888', '#aaaaaa', '#666666', '#222222'], width=0.55, edgecolor='black')
     ax2.set_xticks(np.arange(len(dl_methods)))
