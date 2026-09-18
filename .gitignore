@@ -6,6 +6,9 @@ __pycache__/
 # Data (AAPM challenge data — not redistributable)
 data/*.npy
 
+# IVIM-NET reference checkpoint (not part of paper's reported methods)
+checkpoints/ivim_net_best.pt
+
 # Training resume checkpoints (never commit)
 checkpoints/*_training.pt
 

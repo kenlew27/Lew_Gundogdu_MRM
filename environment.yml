@@ -1,0 +1,18 @@
+name: pia-ivim
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - numpy>=1.24
+  - scipy>=1.10
+  - matplotlib>=3.7
+  - tqdm>=4.60
+  - pip:
+    # Install PyTorch with CUDA 12.8 support (tested: torch 2.11.0+cu128)
+    - --index-url https://download.pytorch.org/whl/cu128
+    - torch>=2.11
+    - python-pptx>=0.6.21

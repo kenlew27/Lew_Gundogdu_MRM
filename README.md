@@ -23,15 +23,13 @@ Evaluated on 200 held-out test cases (801–1000) from the [AAPM 2024 IVIM-dMRI 
 ```
 ├── src/                     Source code
 │   ├── PIA.py               Stage 1 autoencoders (MLP-PIA, CNN-PIA) + Stage 2 UNet Refiner
-│   ├── ivim_net.py           IVIM-NET baseline (Barbieri et al.)
 │   ├── utils.py              Data loading, rRMSE metrics, NLLS fitting, signal model
 │   ├── train_pia_mlp.py      Train MLP-PIA (Stage 1)
 │   ├── train_pia_cnn.py      Train CNN-PIA (Stage 1)
-│   ├── train_ivim_net.py     Train IVIM-NET baseline
 │   ├── train_refiner.py      Train UNet Refiner (Stage 2)
 │   ├── retrain_all.py        Master training orchestrator
 │   ├── evaluate_comprehensive.py   Full evaluation (12 noise levels, 200 test cases)
-│   ├── evaluate_nlls_subset.py     NLLS benchmark (30 cases, 4 noise levels)
+│   ├── evaluate_nlls_subset.py     NLLS benchmark (200 cases, 4 noise levels)
 │   ├── plot_main_figures.py        Main paper figures
 │   └── plot_supplementary_figures.py  Supplementary figures
 ├── checkpoints/             Trained model weights (included)
@@ -39,7 +37,8 @@ Evaluated on 200 held-out test cases (801–1000) from the [AAPM 2024 IVIM-dMRI 
 ├── figures/                 Generated figures (PNG + PDF)
 ├── data/                    VICTRE phantom data (NOT included — see below)
 ├── docs/                    Additional documentation
-├── requirements.txt         Python dependencies
+├── requirements.txt         Python dependencies (pip)
+├── environment.yml          Conda environment file
 └── LICENSE                  MIT License
 ```
 
@@ -50,12 +49,21 @@ Evaluated on 200 held-out test cases (801–1000) from the [AAPM 2024 IVIM-dMRI 
 - Python ≥ 3.10
 - NVIDIA GPU recommended (CUDA-compatible); CPU-only is supported but slower
 
-### Installation
+### Installation (pip)
 
 ```bash
 git clone https://github.com/kenlew27/Lew_Gundogdu_MRM.git
 cd Lew_Gundogdu_MRM
 pip install -r requirements.txt
+```
+
+### Installation (conda — recommended for full reproducibility)
+
+```bash
+git clone https://github.com/kenlew27/Lew_Gundogdu_MRM.git
+cd Lew_Gundogdu_MRM
+conda env create -f environment.yml
+conda activate pia-ivim
 ```
 
 ### Data
@@ -117,7 +125,7 @@ Results are saved to `results/evaluation_detailed.json` and `results/nlls_subset
 python generate_all_figures.py
 ```
 
-Generates all main and supplementary figures to `figures/` and `new_paper/figures/`.
+Generates all main and supplementary figures to `figures/`.
 
 ## Trained Checkpoints
 
@@ -125,19 +133,19 @@ All weights are included in `checkpoints/`:
 
 | File | Model | Size |
 |------|-------|------|
-| `ivim_net_best.pt` | IVIM-NET (baseline) | 24 KB |
 | `pia_baseline.pt` | MLP-PIA (Stage 1) | 3.9 MB |
 | `pia_cnn_best.pt` | CNN-PIA (Stage 1) | 763 KB |
-| `refiner_mlp_e2e_best.pt` | MLP-PIA + UNet Refiner | 13.4 MB |
-| `refiner_cnn_e2e_best.pt` | CNN-PIA + UNet Refiner | 13.4 MB |
+| `refiner_mlp_e2e_best.pt` | MLP-PIA + UNet Refiner (Stage 1+2) | 13.4 MB |
+| `refiner_cnn_e2e_best.pt` | CNN-PIA + UNet Refiner (Stage 1+2) | 13.4 MB |
 
 All models were trained with random seed 42 (`torch.manual_seed(42)`, `numpy.random.seed(42)`, `torch.cuda.manual_seed_all(42)`).
 
 ## Reproducibility
 
-- **Seeds**: All training scripts default to `--seed 42`
+- **Seeds**: All training scripts default to `--seed 42`; seeds are set for `torch`, `numpy`, `random`, and `torch.cuda`
 - **Evaluation noise**: Deterministic per-case seeding (`seed = patient_idx × 10000 + noise_idx`)
 - **avg S₀**: Computed from training cases 1–600 only (0.266081) to avoid test-set leakage
+- **Environment**: Use `environment.yml` (conda) or `requirements.txt` (pip) for exact dependency versions
 
 ## Citation
 
