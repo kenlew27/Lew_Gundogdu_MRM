@@ -23,12 +23,14 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 RESULTS_DIR = os.path.join(BASE_DIR, 'results')
 NEW_PAPER_FIGS = os.path.join(BASE_DIR, 'new_paper', 'figures')
 ROOT_FIGS = os.path.join(BASE_DIR, 'figures')
+SUBMISSION_FIGS = os.path.join(BASE_DIR, 'MRM_FINAL_SUBMISSION', 'Main_Figures')
 
 os.makedirs(NEW_PAPER_FIGS, exist_ok=True)
 os.makedirs(ROOT_FIGS, exist_ok=True)
+os.makedirs(SUBMISSION_FIGS, exist_ok=True)
 
 def save_fig(fig, name):
-    for out_dir in [NEW_PAPER_FIGS, ROOT_FIGS]:
+    for out_dir in [NEW_PAPER_FIGS, ROOT_FIGS, SUBMISSION_FIGS]:
         fig.savefig(os.path.join(out_dir, f"{name}.png"), dpi=300, bbox_inches='tight')
         fig.savefig(os.path.join(out_dir, f"{name}.pdf"), bbox_inches='tight')
     plt.close(fig)
