@@ -41,9 +41,10 @@ def generate_figure_1():
     ax.text(0.28, 0.90, "Stage 1: Physics-Informed\nAutoencoder", ha='center', va='center', fontsize=14, weight='bold')
     ax.text(0.72, 0.90, "Stage 2: U-Net Refiner", ha='center', va='center', fontsize=14, weight='bold')
     
-    input_box = patches.Rectangle((0.02, 0.35), 0.13, 0.25, edgecolor='black', facecolor='white', lw=1.5)
+    # Input box — slightly taller to avoid any clipping
+    input_box = patches.Rectangle((0.02, 0.33), 0.13, 0.29, edgecolor='black', facecolor='white', lw=1.5)
     ax.add_patch(input_box)
-    ax.text(0.085, 0.475, "Multi-b-value\nDW-MRI\n(8 b-values)", ha='center', va='center', fontsize=11)
+    ax.text(0.085, 0.475, "Multi-b-value\nDW-MRI\n(8 b-values)", ha='center', va='center', fontsize=10.5)
     
     ax.annotate('', xy=(0.19, 0.475), xytext=(0.15, 0.475),
                 arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=6, shrink=0.05))
@@ -55,7 +56,9 @@ def generate_figure_1():
     
     ax.annotate('', xy=(0.34, 0.475), xytext=(0.28, 0.475),
                 arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=6, shrink=0.05))
-    ax.text(0.31, 0.51, "$f, D_t, D^*$", ha='center', va='center', fontsize=11, weight='bold')
+    # f,Dt,D* label — placed just above the Physics Decoder box top edge (box top = 0.35+0.25=0.60)
+    # x centered on decoder box center (x=0.40) — clearly above the box, no encoder overlap
+    ax.text(0.40, 0.61, "$f, D_t, D^*$", ha='center', va='bottom', fontsize=9, weight='bold', clip_on=False)
     
     decoder_box = patches.Rectangle((0.34, 0.35), 0.12, 0.25, edgecolor='black', facecolor='white', lw=1.5)
     ax.add_patch(decoder_box)
@@ -68,30 +71,39 @@ def generate_figure_1():
     
     ax.annotate('', xy=(0.52, 0.475), xytext=(0.46, 0.475),
                 arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=6, shrink=0.05))
-    ax.text(0.49, 0.52, "Initial\nparameter\nmaps", ha='center', va='center', fontsize=9.5)
     
+    # U-Net bars — tops capped at 0.72 so skip arrows at 0.75/0.80/0.85 sit clearly above
     unet_x = [0.53, 0.56, 0.59, 0.62, 0.71, 0.75, 0.78, 0.81]
-    unet_y = [0.15, 0.22, 0.30, 0.37, 0.37, 0.30, 0.22, 0.15]
-    unet_h = [0.65, 0.51, 0.35, 0.21, 0.21, 0.35, 0.51, 0.65]
+    unet_y = [0.18, 0.24, 0.31, 0.38, 0.38, 0.31, 0.24, 0.18]
+    unet_h = [0.54, 0.43, 0.30, 0.18, 0.18, 0.30, 0.43, 0.54]
     unet_colors = ['#555555', '#666666', '#777777', '#888888', '#888888', '#777777', '#666666', '#555555']
     for x, y, h, c in zip(unet_x, unet_y, unet_h, unet_colors):
         ax.add_patch(patches.Rectangle((x, y), 0.022, h, edgecolor='black', facecolor=c, lw=1.2))
-        
-    ax.annotate('', xy=(0.79, 0.70), xytext=(0.56, 0.70), arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=5))
-    ax.annotate('', xy=(0.76, 0.58), xytext=(0.59, 0.58), arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=5))
-    ax.annotate('', xy=(0.72, 0.47), xytext=(0.65, 0.47), arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=5))
-    ax.text(0.68, 0.61, "Residual", ha='center', va='center', fontsize=10.5)
-    
-    ax.annotate('', xy=(0.88, 0.475), xytext=(0.84, 0.475),
+
+    # Skip connection arrows — positioned above bar tops (bar tops at 0.72); 
+    # arrows start from right edge of encoder bar, end at left edge of symmetric decoder bar
+    ax.annotate('', xy=(0.832, 0.80), xytext=(0.552, 0.80),
+                arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=5, ls='--'))
+    ax.annotate('', xy=(0.772, 0.76), xytext=(0.612, 0.76),
+                arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=5, ls='--'))
+    ax.annotate('', xy=(0.732, 0.72), xytext=(0.652, 0.72),
+                arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=5, ls='--'))
+    # Label to the LEFT of the leftmost skip arrow (starts at x=0.552), above the U-Net bars
+    ax.text(0.535, 0.84, "Skip\nConnections\n(Residual)", ha='right', va='top', fontsize=9)
+
+    ax.annotate('', xy=(0.88, 0.475), xytext=(0.843, 0.475),
                 arrowprops=dict(facecolor='black', edgecolor='black', width=1, headwidth=6, shrink=0.05))
     
+    # Output map boxes — made taller so circle + label both fit without clipping
     for i, label in enumerate(['$f$ map', '$D_t$ map', '$D^*$ map']):
-        y_pos = 0.65 - i * 0.18
-        box = patches.Rectangle((0.89, y_pos), 0.08, 0.14, edgecolor='black', facecolor='#eaeaea', lw=1.2)
+        y_pos = 0.62 - i * 0.20
+        box_h = 0.17
+        box = patches.Rectangle((0.885, y_pos), 0.10, box_h, edgecolor='black', facecolor='#eaeaea', lw=1.2)
         ax.add_patch(box)
-        circle = patches.Circle((0.93, y_pos + 0.07), 0.04, facecolor='#b0b0b0', edgecolor='none')
+        circle = patches.Circle((0.935, y_pos + box_h * 0.72), 0.034, facecolor='#b0b0b0', edgecolor='none')
         ax.add_patch(circle)
-        ax.text(0.93, y_pos - 0.03, label, ha='center', va='center', fontsize=10.5, weight='bold')
+        # Label in lower portion of box, fully inside
+        ax.text(0.935, y_pos + 0.033, label, ha='center', va='center', fontsize=9.5, weight='bold')
 
     save_fig(fig, 'Figure_1')
 
@@ -215,12 +227,13 @@ def generate_figure_4(dl_data, nlls_data):
     fig, ax = plt.subplots(figsize=(12, 7.5))
     ax.axis('off')
     
-    ax.text(0.5, 0.95, "rRMSE at Prespecified Benchmark Noise Levels", ha='center', va='center', fontsize=15, weight='bold')
-    ax.text(0.5, 0.90, "Mean +/- SD | Lower is better (200 test cases)", ha='center', va='center', fontsize=11, color='#555555')
+    ax.text(0.5, 0.96, "rRMSE at Prespecified Benchmark Noise Levels", ha='center', va='center', fontsize=15, weight='bold')
+    ax.text(0.5, 0.91, "Mean +/- SD | Lower is better (200 test cases)", ha='center', va='center', fontsize=11, color='#555555')
+    ax.text(0.5, 0.86, "Composite = weighted tumor rRMSE (f, D\u209c, D*; see Methods)", ha='center', va='center', fontsize=10, color='#333333', style='italic')
     
     headers = ["Method", "Parameter", "\u03c3=0.02 (SNR 50)", "\u03c3=0.05 (SNR 20)", "\u03c3=0.1 (SNR 10)", "\u03c3=0.2 (SNR 5)"]
     col_x = [0.02, 0.23, 0.41, 0.57, 0.73, 0.89]
-    y_start = 0.82
+    y_start = 0.79
     row_h = 0.035
     
     ax.plot([0.02, 0.98], [y_start + 0.02, y_start + 0.02], color='black', lw=1.8)

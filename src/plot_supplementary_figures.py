@@ -219,9 +219,9 @@ def generate_figure_s4(dl_data, nlls_data):
                 val_str = f"{m_val:.3f} +/- {s_val:.3f}"
                 
             is_best = False
-            if m_key == 'mlp_ref' and met in ['f_tumor', 'composite_tumor']:
+            if m_key == 'mlp_ref' and met in ['f_tumor', 'Dt_tumor', 'composite_tumor']:
                 is_best = True
-            elif m_key == 'cnn_ref' and met == 'Dstar_tumor':
+            elif m_key == 'cnn_ref' and met in ['Dstar_tumor']:
                 is_best = True
                 
             ax.text(col_x[c_idx + 1], curr_y, val_str, ha='center', va='center', 
@@ -262,112 +262,124 @@ def generate_figure_s5():
     save_fig(fig, 'Figure_S5')
 
 def generate_figure_s6():
-    fig, ax = plt.subplots(figsize=(11, 4.8))
+    fig, ax = plt.subplots(figsize=(13, 5.5))
     ax.axis('off')
-    ax.text(0.5, 0.92, "MLP-PIA Architecture (Voxel-Wise Stage 1)", ha='center', fontsize=14, weight='bold')
+    ax.text(0.5, 0.94, "MLP-PIA Architecture (Voxel-Wise Stage 1)", ha='center', fontsize=14, weight='bold')
     
-    x_pos = [0.07, 0.22, 0.37, 0.52, 0.67]
-    w = 0.11
-    h = 0.38
+    x_pos = [0.08, 0.23, 0.38, 0.53, 0.68]
+    w = 0.12
+    h = 0.46
     layers = [
         ("Input\nDW-MRI\n8 b-values", '#ffffff'),
-        ("Linear 8->64\n+ LeakyReLU", '#e8e8e8'),
-        ("Linear 64->128\n+ LeakyReLU", '#d0d0d0'),
-        ("Linear 128->256\n+ LeakyReLU", '#b8b8b8'),
-        ("Linear 256->512\n+ LeakyReLU", '#a0a0a0'),
+        ("Linear\n8→64\n+ LeakyReLU", '#e8e8e8'),
+        ("Linear\n64→128\n+ LeakyReLU", '#d0d0d0'),
+        ("Linear\n128→256\n+ LeakyReLU", '#b8b8b8'),
+        ("Linear\n256→512\n+ LeakyReLU", '#a0a0a0'),
     ]
     
     for i, ((text, c), xp) in enumerate(zip(layers, x_pos)):
-        rect = patches.Rectangle((xp - w/2, 0.45 - h/2), w, h, edgecolor='black', facecolor=c, lw=1.2)
+        rect = patches.Rectangle((xp - w/2, 0.44 - h/2), w, h, edgecolor='black', facecolor=c, lw=1.2)
         ax.add_patch(rect)
-        ax.text(xp, 0.45, text, ha='center', va='center', fontsize=8.5, weight='bold')
+        ax.text(xp, 0.44, text, ha='center', va='center', fontsize=8.5, weight='bold',
+                clip_on=False)
         
     for i in range(len(x_pos) - 1):
-        ax.annotate('', xy=(x_pos[i+1] - w/2 - 0.005, 0.45), 
-                    xytext=(x_pos[i] + w/2 + 0.005, 0.45),
+        ax.annotate('', xy=(x_pos[i+1] - w/2 - 0.005, 0.44), 
+                    xytext=(x_pos[i] + w/2 + 0.005, 0.44),
                     arrowprops=dict(facecolor='black', width=1, headwidth=4))
         
-    head_y = [0.65, 0.45, 0.25]
+    head_y = [0.72, 0.44, 0.16]
     head_names = ["$f$: mean-delta-tanh\n[0.005, 0.400]", 
                   "$D_t$: mean-delta-tanh\n[0.0001, 0.0025]", 
                   "$D^*$: mean-delta-tanh\n[0.002, 0.065]"]
     
     for hy, hname in zip(head_y, head_names):
-        ax.annotate('', xy=(0.80, hy), xytext=(x_pos[-1] + w/2 + 0.005, 0.45), arrowprops=dict(facecolor='black', width=1, headwidth=4))
-        hrect = patches.Rectangle((0.80, hy - 0.08), 0.18, 0.16, edgecolor='black', facecolor='#eaeaea', lw=1.2)
+        ax.annotate('', xy=(0.80, hy), xytext=(x_pos[-1] + w/2 + 0.005, 0.44),
+                    arrowprops=dict(facecolor='black', width=1, headwidth=4))
+        hrect = patches.Rectangle((0.80, hy - 0.10), 0.18, 0.20, edgecolor='black', facecolor='#eaeaea', lw=1.2)
         ax.add_patch(hrect)
-        ax.text(0.89, hy, hname, ha='center', va='center', fontsize=8.0, weight='bold')
+        ax.text(0.89, hy, hname, ha='center', va='center', fontsize=8.5, weight='bold',
+                clip_on=False)
         
     save_fig(fig, 'Figure_S6')
 
 def generate_figure_s7():
-    fig, ax = plt.subplots(figsize=(11, 4.8))
+    fig, ax = plt.subplots(figsize=(13, 5.5))
     ax.axis('off')
-    ax.text(0.5, 0.92, "CNN-PIA Architecture (Spatially Aware Stage 1)", ha='center', fontsize=14, weight='bold')
+    ax.text(0.5, 0.94, "CNN-PIA Architecture (Spatially Aware Stage 1)", ha='center', fontsize=14, weight='bold')
     
-    x_pos = [0.07, 0.22, 0.37, 0.52, 0.67]
-    w = 0.11
-    h = 0.40
+    x_pos = [0.08, 0.23, 0.38, 0.53, 0.68]
+    w = 0.12
+    h = 0.48
     layers = [
-        ("Input Map\n8x200x200", '#ffffff'),
-        ("Conv2D 8->64\n3x3, pad 1\n+ LeakyReLU", '#e8e8e8'),
-        ("Conv2D 64->64\n3x3, pad 1\n+ LeakyReLU", '#d0d0d0'),
-        ("Conv2D 64->128\n3x3, pad 1\n+ LeakyReLU", '#b8b8b8'),
-        ("Conv2D 128->64\n3x3, pad 1\n+ LeakyReLU", '#a0a0a0'),
+        ("Input Map\n8×200×200", '#ffffff'),
+        ("Conv2D 8→64\n3×3, pad 1\n+ LeakyReLU", '#e8e8e8'),
+        ("Conv2D 64→64\n3×3, pad 1\n+ LeakyReLU", '#d0d0d0'),
+        ("Conv2D 64→128\n3×3, pad 1\n+ LeakyReLU", '#b8b8b8'),
+        ("Conv2D 128→64\n3×3, pad 1\n+ LeakyReLU", '#a0a0a0'),
     ]
     
     for i, ((text, c), xp) in enumerate(zip(layers, x_pos)):
-        rect = patches.Rectangle((xp - w/2, 0.45 - h/2), w, h, edgecolor='black', facecolor=c, lw=1.2)
+        rect = patches.Rectangle((xp - w/2, 0.44 - h/2), w, h, edgecolor='black', facecolor=c, lw=1.2)
         ax.add_patch(rect)
-        ax.text(xp, 0.45, text, ha='center', va='center', fontsize=8.0, weight='bold')
+        ax.text(xp, 0.44, text, ha='center', va='center', fontsize=8.5, weight='bold',
+                clip_on=False)
         
     for i in range(len(x_pos) - 1):
-        ax.annotate('', xy=(x_pos[i+1] - w/2 - 0.005, 0.45), 
-                    xytext=(x_pos[i] + w/2 + 0.005, 0.45),
+        ax.annotate('', xy=(x_pos[i+1] - w/2 - 0.005, 0.44), 
+                    xytext=(x_pos[i] + w/2 + 0.005, 0.44),
                     arrowprops=dict(facecolor='black', width=1, headwidth=4))
         
-    head_y = [0.65, 0.45, 0.25]
-    head_names = ["1x1 Conv -> $f$\n[0.005, 0.400]", 
-                  "1x1 Conv -> $D_t$\n[0.0001, 0.0025]", 
-                  "1x1 Conv -> $D^*$\n[0.002, 0.065]"]
+    head_y = [0.72, 0.44, 0.16]
+    head_names = ["1×1 Conv → $f$\n[0.005, 0.400]", 
+                  "1×1 Conv → $D_t$\n[0.0001, 0.0025]", 
+                  "1×1 Conv → $D^*$\n[0.002, 0.065]"]
     
     for hy, hname in zip(head_y, head_names):
-        ax.annotate('', xy=(0.80, hy), xytext=(x_pos[-1] + w/2 + 0.005, 0.45), arrowprops=dict(facecolor='black', width=1, headwidth=4))
-        hrect = patches.Rectangle((0.80, hy - 0.08), 0.18, 0.16, edgecolor='black', facecolor='#eaeaea', lw=1.2)
+        ax.annotate('', xy=(0.80, hy), xytext=(x_pos[-1] + w/2 + 0.005, 0.44),
+                    arrowprops=dict(facecolor='black', width=1, headwidth=4))
+        hrect = patches.Rectangle((0.80, hy - 0.10), 0.18, 0.20, edgecolor='black', facecolor='#eaeaea', lw=1.2)
         ax.add_patch(hrect)
-        ax.text(0.89, hy, hname, ha='center', va='center', fontsize=8.0, weight='bold')
+        ax.text(0.89, hy, hname, ha='center', va='center', fontsize=8.5, weight='bold',
+                clip_on=False)
         
     save_fig(fig, 'Figure_S7')
 
 def generate_figure_s8():
-    fig, ax = plt.subplots(figsize=(12, 5.2))
+    fig, ax = plt.subplots(figsize=(14, 6.0))
     ax.axis('off')
-    ax.text(0.5, 0.94, "Stage 2: Residual U-Net Refiner Architecture", ha='center', fontsize=14, weight='bold')
+    ax.text(0.5, 0.96, "Stage 2: Residual U-Net Refiner Architecture", ha='center', fontsize=14, weight='bold')
     
+    # (text, cx, cy, w, h, color)
     blocks = [
-        ("Input Stage 1\n(f, Dt, D*)\n3x200x200", 0.08, 0.50, 0.11, 0.50, '#ffffff'),
-        ("ResBlock 1\n64 ch\n200x200", 0.22, 0.50, 0.09, 0.50, '#d0d0d0'),
-        ("MaxPool 2x2\nResBlock 2\n128 ch, 100x100", 0.36, 0.40, 0.10, 0.35, '#b0b0b0'),
-        ("MaxPool 2x2\nBottleneck\n256 ch, 50x50", 0.50, 0.30, 0.10, 0.22, '#909090'),
-        ("Upsample 2x2\n+ Skip Cat\nResBlock 128 ch", 0.64, 0.40, 0.10, 0.35, '#b0b0b0'),
-        ("Upsample 2x2\n+ Skip Cat\nResBlock 64 ch", 0.78, 0.50, 0.09, 0.50, '#d0d0d0'),
-        ("1x1 Conv\nRefined Maps\n3x200x200", 0.92, 0.50, 0.11, 0.50, '#ffffff')
+        ("Input Stage 1\n(f, Dt, D*)\n3×200×200", 0.08, 0.50, 0.11, 0.55, '#ffffff'),
+        ("ResBlock 1\n64 ch\n200×200",             0.22, 0.50, 0.09, 0.55, '#d0d0d0'),
+        ("MaxPool 2×2\nResBlock 2\n128 ch\n100×100", 0.36, 0.38, 0.10, 0.38, '#b0b0b0'),
+        ("MaxPool 2×2\nBottleneck\n256 ch\n50×50",   0.50, 0.28, 0.10, 0.26, '#909090'),
+        ("Upsample 2×2\n+ Skip Cat\nResBlock 128 ch", 0.64, 0.38, 0.10, 0.38, '#b0b0b0'),
+        ("Upsample 2×2\n+ Skip Cat\nResBlock 64 ch",  0.78, 0.50, 0.09, 0.55, '#d0d0d0'),
+        ("1×1 Conv\nRefined Maps\n3×200×200",          0.92, 0.50, 0.11, 0.55, '#ffffff')
     ]
     
     for text, cx, cy, w, h, c in blocks:
         rect = patches.Rectangle((cx - w/2, cy - h/2), w, h, edgecolor='black', facecolor=c, lw=1.2)
         ax.add_patch(rect)
-        ax.text(cx, cy, text, ha='center', va='center', fontsize=8.0, weight='bold')
+        ax.text(cx, cy, text, ha='center', va='center', fontsize=7.5, weight='bold',
+                clip_on=False)
         
     for i in range(len(blocks) - 1):
         ax.annotate('', xy=(blocks[i+1][1] - blocks[i+1][3]/2, blocks[i+1][2]), 
                     xytext=(blocks[i][1] + blocks[i][3]/2, blocks[i][2]),
                     arrowprops=dict(facecolor='black', width=1, headwidth=4))
-        
-    ax.annotate('', xy=(0.73, 0.72), xytext=(0.27, 0.72), arrowprops=dict(facecolor='black', edgecolor='black', width=1.1, headwidth=4, ls='--'))
-    ax.text(0.50, 0.74, "Skip Connection (Concat 64 ch)", ha='center', fontsize=8.5, weight='bold')
-    ax.annotate('', xy=(0.59, 0.55), xytext=(0.41, 0.55), arrowprops=dict(facecolor='black', edgecolor='black', width=1.1, headwidth=4, ls='--'))
-    ax.text(0.50, 0.57, "Skip Connection (Concat 128 ch)", ha='center', fontsize=8.5, weight='bold')
+
+    # Skip connection arrows — placed well above the tallest block tops (~0.775)
+    ax.annotate('', xy=(0.783, 0.86), xytext=(0.225, 0.86),
+                arrowprops=dict(facecolor='black', edgecolor='black', width=1.1, headwidth=4, ls='--'))
+    ax.text(0.504, 0.89, "Skip Connection (Concat 64 ch)", ha='center', fontsize=8.5, weight='bold')
+    
+    ax.annotate('', xy=(0.645, 0.80), xytext=(0.405, 0.80),
+                arrowprops=dict(facecolor='black', edgecolor='black', width=1.1, headwidth=4, ls='--'))
+    ax.text(0.525, 0.83, "Skip Connection (Concat 128 ch)", ha='center', fontsize=8.5, weight='bold')
 
     save_fig(fig, 'Figure_S8')
 
@@ -538,8 +550,8 @@ def generate_figure_s10():
         axes[row, 2].axis('off')
         
         max_d = max(np.percentile(np.abs(err_diff[mask]), 99), 1e-6)
-        im_diff = axes[row, 3].imshow(err_diff, cmap='coolwarm_r', vmin=-max_d, vmax=max_d)
-        axes[row, 3].set_title("Improvement (Red = Reduced Error)", fontsize=10, weight='bold')
+        im_diff = axes[row, 3].imshow(err_diff, cmap='coolwarm', vmin=-max_d, vmax=max_d)
+        axes[row, 3].set_title("Improvement (Red = Reduced Error,\nBlue = Increased Error)", fontsize=9.5, weight='bold')
         axes[row, 3].axis('off')
         
     plt.suptitle(f"Stage 2 Spatial Refinement Denoising & Error Reduction (Case {case_idx:04d})", 
